@@ -36,6 +36,12 @@ if (!config.SERVER_URL) { //used for ink to static files
 	throw new Error('missing SERVER_URL');
 }
 
+if (!config.EMAIL_FROM) {
+  throw new Error('missing EMAIL_FROM');
+}
+if (!config.EMAIL_TO) { //used for ink to static files
+  throw new Error('missing EMAIL_TO');
+}
 
 
 app.set('port', (process.env.PORT || 5000))
@@ -204,10 +210,40 @@ function handleEcho(messageId, appId, metadata) {
 
 function handleDialogFlowAction(sender, action, messages, contexts, parameters) {
 	switch (action) {
+    case "customer_info_detail":
+      if (isDefined(contexts[0])) {
+        sendEmail('New Order', JSON.stringify(contexts));
+        handleMessages(messages, sender);
+      } else {
+        handleMessages(messages, sender);
+      }
+      break;
 		default:
 			//unhandled action, just send back the text
             handleMessages(messages, sender);
 	}
+}
+
+function sendEmail(subject_, content_) {
+  console.log('sending email');
+  let helper = require('sendgrid').mail;
+  let from_email = new helper.Email(config.EMAIL_FROM);
+  let to_email = new helper.Email(config.EMAIL_TO);
+  let subject = subject_;
+  let content = new helper.Content("text/html", content_);
+  let mail = new helper.Mail(from_email, subject, to_email, content);
+  let sg = require('sendgrid')(config.SENDGRID_API_KEY);
+  let request = sg.emptyRequest({
+    method: 'POST',
+    path: '/v3/mail/send',
+    body: mail.toJSON()
+  });
+
+  sg.API(request, function (error, response) {
+    console.log(response.statusCode);
+    console.log(response.body);
+    console.log(response.headers);
+  })
 }
 
 function handleMessage(message, sender) {
