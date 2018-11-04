@@ -212,7 +212,8 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
 	switch (action) {
     case "customer_info_detail":
       if (isDefined(contexts[0])) {
-        sendEmail('New Order', JSON.stringify(contexts));
+        sendTextMessage(sender.id, "From server");
+        // sendEmail('New Order', JSON.stringify(contexts));
         handleMessages(messages, sender);
       } else {
         handleMessages(messages, sender);
