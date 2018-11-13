@@ -348,15 +348,22 @@ function handleMessages(messages, sender) {
 }
 
 function handleDialogFlowResponse(sender, response) {
-    let responseText = response.fulfillmentMessages.fulfillmentText;
+  let responseText = response.fulfillmentMessages.fulfillmentText;
 
-    let messages = response.fulfillmentMessages;
-    let action = response.action;
-    let contexts = response.outputContexts;
-    let parameters = response.parameters;
-    console.log('*********** Action: ', action);
-    console.log('*********** Contexts: ', contexts);
-    console.log('*********** Parameters: ', parameters);
+  let messages = response.fulfillmentMessages;
+  let action = response.action;
+  let contexts = response.outputContexts;
+  let parameters = response.parameters;
+  console.log('-----------------------------------');
+  console.log('Action: ', action);
+  console.log('Contexts: ', contexts);
+  console.log('Parameters: ', parameters);
+  if (action === 'Choose-Build.Choose-Build-yes') {
+    console.log('Syrup list: ', parameters['fields']['Syrup']['listValue']);
+    console.log('Toppings list: ', parameters['fields']['Toppings']['listValue']);
+  }
+  console.log('-----------------------------------');
+
 	sendTypingOff(sender);
 
     if (isDefined(action)) {
