@@ -170,7 +170,7 @@ function receivedMessage(event) {
 
 	// You may get a text or attachment but not both
 	var messageText = message.text;
-	console.log(messageText);
+	console.log('*********** message text: ', messageText);
 	var messageAttachments = message.attachments;
 	var quickReply = message.quick_reply;
 
@@ -354,8 +354,9 @@ function handleDialogFlowResponse(sender, response) {
     let action = response.action;
     let contexts = response.outputContexts;
     let parameters = response.parameters;
-    console.log('contexts: ', contexts);
-    console.log('parameters: ', parameters);
+    console.log('*********** Action: ', action);
+    console.log('*********** Contexts: ', contexts);
+    console.log('*********** Parameters: ', parameters);
 	sendTypingOff(sender);
 
     if (isDefined(action)) {
@@ -374,7 +375,7 @@ async function sendToDialogFlow(sender, textString, params) {
 
     sendTypingOn(sender);
 
-    console.log('Send To DialogFlow');
+    // console.log('Send To DialogFlow');
     try {
         const sessionPath = sessionClient.sessionPath(
             config.GOOGLE_PROJECT_ID,
@@ -397,7 +398,7 @@ async function sendToDialogFlow(sender, textString, params) {
         };
         const responses = await sessionClient.detectIntent(request);
         const result = responses[0].queryResult;
-      console.log('response result', result);
+      // console.log('response result', result);
       handleDialogFlowResponse(sender, result);
     } catch (e) {
         console.log('error');
