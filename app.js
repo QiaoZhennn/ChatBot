@@ -363,6 +363,7 @@ function countPrice(action, parameters) {
   console.log('Action: ', action);
   console.log('Parameters: ', parameters);
   if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no') {
+    curPrice = curPrice.toFixed(2);
     console.log('Final price: ', curPrice);
     return curPrice;
   }
