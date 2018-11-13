@@ -2,5 +2,7 @@ node_modules/
 token
 .DS_Store
 .idea
+.env
 config.sample.js
+config.js
 smartbabe*

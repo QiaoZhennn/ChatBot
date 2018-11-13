@@ -1,6 +1,7 @@
 'use strict';
 
 const dialogflow = require('dialogflow');
+require('dotenv').config();
 const config = require('./config');
 const express = require('express');
 const crypto = require('crypto');
@@ -44,7 +45,7 @@ if (!config.EMAIL_TO) { //used for ink to static files
 }
 
 
-app.set('port', (process.env.PORT || 5000))
+app.set('port', (process.env.PORT || 5000));
 
 //verify request came from facebook
 app.use(bodyParser.json({
@@ -85,7 +86,7 @@ const sessionIds = new Map();
 // Index route
 app.get('/', function (req, res) {
 	res.send('Hello world, I am a chat bot')
-})
+});
 
 // for Facebook verification
 app.get('/webhook/', function (req, res) {
@@ -96,7 +97,7 @@ app.get('/webhook/', function (req, res) {
 		console.error("Failed validation. Make sure the validation tokens match.");
 		res.sendStatus(403);
 	}
-})
+});
 
 /*
  * All callbacks for Messenger are POST-ed. They will be sent to the same
@@ -169,6 +170,7 @@ function receivedMessage(event) {
 
 	// You may get a text or attachment but not both
 	var messageText = message.text;
+	console.log(messageText);
 	var messageAttachments = message.attachments;
 	var quickReply = message.quick_reply;
 
@@ -371,6 +373,7 @@ async function sendToDialogFlow(sender, textString, params) {
 
     sendTypingOn(sender);
 
+    console.log('Send To DialogFlow');
     try {
         const sessionPath = sessionClient.sessionPath(
             config.GOOGLE_PROJECT_ID,
@@ -391,8 +394,10 @@ async function sendToDialogFlow(sender, textString, params) {
                 }
             }
         };
+        console.log('sessionPath', sessionPath);
+        console.log('request', request);
         const responses = await sessionClient.detectIntent(request);
-
+        console.log('responses', responses);
         const result = responses[0].queryResult;
         handleDialogFlowResponse(sender, result);
     } catch (e) {
