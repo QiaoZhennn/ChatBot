@@ -354,7 +354,8 @@ function handleDialogFlowResponse(sender, response) {
     let action = response.action;
     let contexts = response.outputContexts;
     let parameters = response.parameters;
-
+    console.log('contexts: ', contexts);
+    console.log('parameters: ', parameters);
 	sendTypingOff(sender);
 
     if (isDefined(action)) {
@@ -394,12 +395,10 @@ async function sendToDialogFlow(sender, textString, params) {
                 }
             }
         };
-        console.log('sessionPath', sessionPath);
-        console.log('request', request);
         const responses = await sessionClient.detectIntent(request);
-        console.log('responses', responses);
         const result = responses[0].queryResult;
-        handleDialogFlowResponse(sender, result);
+      console.log('response result', result);
+      handleDialogFlowResponse(sender, result);
     } catch (e) {
         console.log('error');
         console.log(e);
