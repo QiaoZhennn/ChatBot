@@ -348,6 +348,7 @@ function handleMessages(messages, sender) {
 
 let curPrice;
 let chosenSize;
+let chosenSpecial;
 let chosenSyrups;
 let chosenToppings;
 
@@ -358,25 +359,32 @@ function resetPrice() {
   chosenToppings = new Set([]);
 }
 
+
 function countPrice(action, parameters) {
   console.log('----------v--------v----------v----');
   console.log('Action: ', action);
   console.log('Parameters: ', parameters);
-  if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no') {
+  if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no' || action === 'Choose-Special-Confirm') {
     curPrice = curPrice.toFixed(2);
     console.log('Final price: ', curPrice);
     return curPrice;
   }
-  if (action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes') {
+  if (action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
     console.log('Reset Price!');
     resetPrice();
   }
-  if (action === 'Build' || action === 'Add-Extra') {
+  if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
     if (parameters['fields']['Size'] && parameters['fields']['Size']['stringValue'].length !== 0 && !chosenSize) {
       console.log('Chosen Size: ', parameters['fields']['Size']['stringValue']);
       curPrice += parseInt(price[parameters['fields']['Size']['stringValue']]);
       console.log('size price: ', curPrice);
       chosenSize = true;
+    }
+    if (parameters['fields']['Special'] && parameters['fields']['Special']['stringValue'].length !== 0 && !chosenSpecial) {
+      console.log('Chosen Special: ', parameters['fields']['Special']['stringValue']);
+      curPrice += parseFloat('3.99');
+      console.log('Special price: ', curPrice);
+      chosenSpecial = true;
     }
     if (parameters['fields']['Syrup'] && parameters['fields']['Syrup']['listValue'].length !== 0) {
       parameters['fields']['Syrup']['listValue']['values'].forEach(function (syrupObj) {
