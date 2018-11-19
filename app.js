@@ -382,7 +382,7 @@ function countPrice(action, parameters) {
     }
     if (parameters['fields']['Special'] && parameters['fields']['Special']['stringValue'].length !== 0 && !chosenSpecial) {
       console.log('Chosen Special: ', parameters['fields']['Special']['stringValue']);
-      curPrice += parseFloat('3.99');
+      curPrice += parseFloat('0.99');
       console.log('Special price: ', curPrice);
       chosenSpecial = true;
     }
