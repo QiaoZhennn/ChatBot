@@ -369,11 +369,11 @@ function countPrice(action, parameters) {
     console.log('Final price: ', curPrice);
     return curPrice;
   }
-  if (action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
+  else if (action === 'input.welcome' || action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
     console.log('Reset Price!');
     resetPrice();
   }
-  if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
+  else if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
     console.log("Calculating price...");
     if (parameters['fields']['Size']) {
       console.log(parameters['fields']['Size']);
@@ -381,6 +381,8 @@ function countPrice(action, parameters) {
     }
     if (parameters['fields']['Size'] && parameters['fields']['Size']['stringValue'].length !== 0 && !chosenSize) {
       console.log('Chosen Size: ', parameters['fields']['Size']['stringValue']);
+      console.log('befor parseInt', price[parameters['fields']['Size']['stringValue']]);
+      console.log('after parseInt', parseInt(price[parameters['fields']['Size']['stringValue']]));
       curPrice += parseInt(price[parameters['fields']['Size']['stringValue']]);
       console.log('size price: ', curPrice);
       chosenSize = true;
