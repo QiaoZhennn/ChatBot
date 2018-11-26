@@ -375,8 +375,10 @@ function countPrice(action, parameters) {
   }
   if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
     console.log("Calculating price...");
-    if (parameters['fields']['Size']) console.log(parameters['fields']['Size']);
-    if (parameters['fields']['Size']['stringValue'].length !== 0) console.log(parameters['fields']['Size']['stringValue']);
+    if (parameters['fields']['Size']) {
+      console.log(parameters['fields']['Size']);
+      if (parameters['fields']['Size']['stringValue'].length !== 0) console.log(parameters['fields']['Size']['stringValue']);
+    }
     if (parameters['fields']['Size'] && parameters['fields']['Size']['stringValue'].length !== 0 && !chosenSize) {
       console.log('Chosen Size: ', parameters['fields']['Size']['stringValue']);
       curPrice += parseInt(price[parameters['fields']['Size']['stringValue']]);
