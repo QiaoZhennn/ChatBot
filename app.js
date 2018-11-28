@@ -10,13 +10,8 @@ const request = require('request');
 const app = express();
 const uuid = require('uuid');
 
-const price = {
-  small: 2,
-  medium: 3,
-  large: 4,
-  topping: 0.2,
-  syrup: 0.5
-};
+const User = require('./user');
+
 
 // Messenger API parameters
 if (!config.FB_PAGE_TOKEN) {
@@ -51,6 +46,7 @@ if (!config.EMAIL_TO) { //used for ink to static files
   throw new Error('missing EMAIL_TO');
 }
 
+let users = {};
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -159,8 +155,11 @@ function receivedMessage(event) {
   if (!sessionIds.has(senderID)) {
     sessionIds.set(senderID, uuid.v1());
   }
-  //console.log("Received message for user %d and page %d at %d with message:", senderID, recipientID, timeOfMessage);
-  //console.log(JSON.stringify(message));
+
+  if (!users[senderID]) {
+    users[senderID] = new User(senderID);
+    console.log('New User senderID: ', senderID);
+  }
 
   var isEcho = message.is_echo;
   var messageId = message.mid;
@@ -169,7 +168,7 @@ function receivedMessage(event) {
 
   // You may get a text or attachment but not both
   var messageText = message.text;
-  console.log('*>>>>>>>>>>>>>>>>>> Message: ', messageText);
+  console.log('>>>>>>>>>>>>>>>>>>> Message: ', messageText);
   var messageAttachments = message.attachments;
   var quickReply = message.quick_reply;
 
@@ -321,7 +320,6 @@ function handleMessages(messages, sender) {
   let cardTypes = [];
   let timeout = 0;
   for (var i = 0; i < messages.length; i++) {
-
     if (previousType == "card" && (messages[i].message != "card" || i == messages.length - 1)) {
       timeout = (i - 1) * timeoutInterval;
       setTimeout(handleCardMessages.bind(null, cardTypes, sender), timeout);
@@ -346,76 +344,23 @@ function handleMessages(messages, sender) {
   }
 }
 
-let curPrice;
-let chosenSize;
-let chosenSpecial;
-let chosenSyrups;
-let chosenToppings;
-
-function resetPrice() {
-  curPrice = 0;
-  chosenSize = false;
-  chosenSyrups = new Set([]);
-  chosenToppings = new Set([]);
-}
 
 
-function countPrice(action, parameters) {
+function countPrice(action, parameters, user) {
   console.log('----------v--------v----------v----');
   console.log('Action: ', action);
   console.log('Parameters: ', parameters);
   if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no' || action === 'Choose-Special-Confirm') {
-    if (curPrice) {
-      curPrice = curPrice.toFixed(2);
-      console.log('Final price: ', curPrice);
-      return curPrice;
-    }
+    user.summarize();
+    console.log(user);
+    return user.price;
   }
   else if (action === 'input.welcome' || action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
-    console.log('Reset Price!');
-    resetPrice();
+    console.log('Reset price!');
+    user.resetOrder();
   }
   else if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
-    console.log("Calculating price...");
-    if (parameters['fields']['Size']) {
-      console.log(parameters['fields']['Size']);
-      if (parameters['fields']['Size']['stringValue'].length !== 0) console.log(parameters['fields']['Size']['stringValue']);
-    }
-    if (parameters['fields']['Size'] && parameters['fields']['Size']['stringValue'].length !== 0 && !chosenSize) {
-      console.log('Chosen Size: ', parameters['fields']['Size']['stringValue']);
-      curPrice += parseInt(price[parameters['fields']['Size']['stringValue']]);
-      console.log('size price: ', curPrice);
-      chosenSize = true;
-    }
-    if (parameters['fields']['Special'] && parameters['fields']['Special']['stringValue'].length !== 0 && !chosenSpecial) {
-      console.log('Chosen Special: ', parameters['fields']['Special']['stringValue']);
-      curPrice += parseFloat('0.99');
-      console.log('Special price: ', curPrice);
-      chosenSpecial = true;
-    }
-    if (parameters['fields']['Syrup'] && parameters['fields']['Syrup']['listValue'].length !== 0) {
-      parameters['fields']['Syrup']['listValue']['values'].forEach(function (syrupObj) {
-        const syrup = syrupObj['stringValue'];
-        if (!chosenSyrups.has(syrup)) {
-          console.log('Add syrup', syrup);
-          chosenSyrups.add(syrup);
-          curPrice += parseFloat(price['syrup']);
-          console.log('syrup price: ', curPrice);
-        }
-      });
-    }
-    if (parameters['fields']['Toppings'] && parameters['fields']['Toppings']['listValue'].length !== 0) {
-      parameters['fields']['Toppings']['listValue']['values'].forEach(function (toppingObj) {
-        const topping = toppingObj['stringValue'];
-        if (!chosenToppings.has(topping)) {
-          console.log('Add topping', topping);
-          chosenToppings.add(topping);
-          curPrice += parseFloat(price['topping']);
-          console.log('topping price: ', curPrice);
-        }
-      });
-    }
-    console.log('Current Price', curPrice);
+    user.collectOrderInfo(action, parameters);
   }
   console.log('----------A--------A-----------A---');
   return null;
@@ -428,12 +373,15 @@ function handleDialogFlowResponse(sender, response) {
   let action = response.action;
   let contexts = response.outputContexts;
   let parameters = response.parameters;
-  const price = countPrice(action, parameters);
+  const user = users[sender];
+  // console.log('Current Messenger User: ', user);
+  const price = countPrice(action, parameters, user);
   sendTypingOff(sender);
 
   if (price) {
-    const totalPrice = 'Total price is: ' + price;
-    sendTextMessage(sender, totalPrice);
+    // const totalPrice = 'Total price is: ' + price;
+    console.log('Current user order info: ', user.orderHistory);
+    sendTextMessage(sender, price);
   }
   if (isDefined(action)) {
     handleDialogFlowAction(sender, action, messages, contexts, parameters);
