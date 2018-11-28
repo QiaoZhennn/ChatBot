@@ -11,7 +11,7 @@ const app = express();
 const uuid = require('uuid');
 
 const User = require('./user');
-
+const flavorImage = require('./flavorImage');
 
 // Messenger API parameters
 if (!config.FB_PAGE_TOKEN) {
@@ -208,8 +208,65 @@ function handleEcho(messageId, appId, metadata) {
   console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
 }
 
+function getCardElements(sender) {
+  const user = users[sender];
+  const currentOrder = user.orderHistory[user.orderHistory.length - 1];
+  if (currentOrder) {
+    let elements = [];
+    let syrups = '';
+    let toppings = '';
+    if (currentOrder.syrups.length !== 0) {
+      syrups += "\nSyrups: ";
+      for (let i = 0; i < currentOrder.syrups.length; ++i) {
+        syrups += currentOrder.syrups[i];
+        syrups += ", "
+      }
+      syrups = syrups.substring(0, syrups.length - 2);
+    }
+    if (currentOrder.toppings.length !== 0) {
+      toppings += "\nToppings: ";
+      for (let i = 0; i < currentOrder.toppings.length; ++i) {
+        toppings += currentOrder.toppings[i];
+        toppings += ", "
+      }
+      toppings = toppings.substring(0, toppings.length - 2);
+    }
+    for (let i = 0; i < currentOrder.flavors.length; ++i) {
+      if (i === 0) {
+        elements.push({
+          'title': currentOrder.flavors[i],
+          'image_url': flavorImage[currentOrder.flavors[i]],
+          'subtitle' : currentOrder.size + " " + currentOrder.container + syrups + toppings + '\nTotal price: $' + currentOrder.price,
+          'buttons' : [{
+            'type': 'postback',
+            'title': 'Confirm Order',
+            'payload': 'order_confirm'
+          }]
+        });
+      } else {
+        elements.push({
+          'title': currentOrder.flavors[i],
+          'image_url': flavorImage[currentOrder.flavors[i]]
+        });
+      }
+    }
+    return elements;
+  } else {
+    return [{'title': 'something went wrong'}];
+  }
+}
+
 function handleDialogFlowAction(sender, action, messages, contexts, parameters) {
   switch (action) {
+    case "Choose-Build.Choose-Build-yes.Choose-Build-yes-no": {
+      handleMessages(messages, sender);
+      sendTypingOn(sender);
+      setTimeout(function () {
+        const elements = getCardElements(sender);
+        sendGenericMessage(sender, elements);
+      }, 300);
+      break;
+    }
     case "customer_info_detail":
       if (isDefined(contexts[0])) {
         sendTextMessage(sender, "From server");
@@ -343,7 +400,6 @@ function handleMessages(messages, sender) {
 
   }
 }
-
 
 
 function countPrice(action, parameters, user) {
@@ -807,6 +863,10 @@ function receivedPostback(event) {
   var payload = event.postback.payload;
 
   switch (payload) {
+    case 'order_confirm': {
+      sendTextMessage(senderID, "Can I get a name for your order?");
+      break;
+    }
     default:
       //unindentified payload
       sendTextMessage(senderID, "I'm not sure what you want. Can you be more specific?");

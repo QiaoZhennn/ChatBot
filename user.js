@@ -10,8 +10,7 @@ class User {
     this.toppings = [];
     this.syrups = [];
     this.special = '';
-    this.orderHistory = {};
-    this.priceInfo = priceInfo;
+    this.orderHistory = [];
   }
 
   resetOrder() {
@@ -37,7 +36,7 @@ class User {
     }
     if (parameters['fields']['Container'] && parameters['fields']['Container']['stringValue'].length !== 0) {
       console.log('Chosen Container: ', parameters['fields']['Container']['stringValue']);
-      this.size = parameters['fields']['Container']['stringValue'];
+      this.container = parameters['fields']['Container']['stringValue'];
     }
     if (parameters['fields']['Size'] && parameters['fields']['Size']['stringValue'].length !== 0) {
       console.log('Chosen Size: ', parameters['fields']['Size']['stringValue']);
@@ -69,15 +68,15 @@ class User {
 
   summarize() {
     if (this.size) {
-      this.price += parseFloat(this.priceInfo[this.size]);
+      this.price += parseFloat(priceInfo[this.size]);
       console.log("Add size price: ", this.price);
     }
     if (this.toppings.length) {
-      this.price += parseFloat(this.priceInfo['topping']) * this.toppings.length;
+      this.price += parseFloat(priceInfo['topping']) * this.toppings.length;
       console.log("Add toppings price: ", this.price);
     }
     if (this.syrups.length) {
-      this.price += parseFloat(this.priceInfo['syrup']) * this.syrups.length;
+      this.price += parseFloat(priceInfo['syrup']) * this.syrups.length;
       console.log("Add syrups price: ", this.price);
     }
     this.price = this.price.toFixed(2);
@@ -86,7 +85,7 @@ class User {
   };
 
   userOrderInfo() {
-    this.orderHistory = {
+    this.orderHistory.push({
       'recipient': this.recipient,
       'special': this.special,
       'flavors': this.flavors,
@@ -95,7 +94,7 @@ class User {
       'toppings': this.toppings,
       'syrups': this.syrups,
       'price': this.price
-    }
+    })
   };
 }
 
