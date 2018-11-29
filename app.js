@@ -256,8 +256,33 @@ function getCardElements(sender) {
   }
 }
 
+function getSpecialCardElements(sender) {
+  const user = users[sender];
+  const currentOrder = user.orderHistory[user.orderHistory.length - 1];
+  const elements = [{
+    'title': currentOrder.special,
+    'image_url': flavorImage[currentOrder.special],
+    'subtitle' : currentOrder.size + " " + currentOrder.container + '\nTotal price: $' + currentOrder.price,
+    'buttons' : [{
+      'type': 'postback',
+      'title': 'Confirm Order',
+      'payload': 'order_confirm'
+    }]
+  }];
+  return elements;
+}
+
 function handleDialogFlowAction(sender, action, messages, contexts, parameters) {
   switch (action) {
+    case "Choose-Special-Confirm": {
+      handleMessages(messages, sender);
+      sendTypingOn(sender);
+      setTimeout(function () {
+        const elements = getSpecialCardElements(sender);
+        sendGenericMessage(sender, elements);
+      }, 300);
+      break;
+    }
     case "Choose-Build.Choose-Build-yes.Choose-Build-yes-no": {
       handleMessages(messages, sender);
       sendTypingOn(sender);
@@ -409,7 +434,6 @@ function countPrice(action, parameters, user) {
   if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no' || action === 'Choose-Special-Confirm') {
     user.summarize();
     console.log(user);
-    return user.price;
   }
   else if (action === 'input.welcome' || action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
     console.log('Reset price!');
@@ -419,7 +443,6 @@ function countPrice(action, parameters, user) {
     user.collectOrderInfo(action, parameters);
   }
   console.log('----------A--------A-----------A---');
-  return null;
 }
 
 function handleDialogFlowResponse(sender, response) {
@@ -431,14 +454,9 @@ function handleDialogFlowResponse(sender, response) {
   let parameters = response.parameters;
   const user = users[sender];
   // console.log('Current Messenger User: ', user);
-  const price = countPrice(action, parameters, user);
+  countPrice(action, parameters, user);
   sendTypingOff(sender);
 
-  if (price) {
-    // const totalPrice = 'Total price is: ' + price;
-    console.log('Current user order info: ', user.orderHistory);
-    sendTextMessage(sender, price);
-  }
   if (isDefined(action)) {
     handleDialogFlowAction(sender, action, messages, contexts, parameters);
   } else if (isDefined(messages)) {
@@ -865,6 +883,30 @@ function receivedPostback(event) {
   switch (payload) {
     case 'order_confirm': {
       sendTextMessage(senderID, "Can I get a name for your order?");
+      break;
+    }
+    case 'Tutti Frutti': {
+      sendToDialogFlow(senderID, "Tutti Frutti");
+      break;
+    }
+    case 'Strawberry Cheesecake': {
+      sendToDialogFlow(senderID, "Strawberry Cheesecake");
+      break;
+    }
+    case 'Peanut World': {
+      sendToDialogFlow(senderID, "Peanut World");
+      break;
+    }
+    case 'Chocolate Therapy': {
+      sendToDialogFlow(senderID, "Chocolate Therapy");
+      break;
+    }
+    case 'American Dream': {
+      sendToDialogFlow(senderID, "American Dream");
+      break;
+    }
+    case 'Chunky Monkey': {
+      sendToDialogFlow(senderID, "Chunky Monkey");
       break;
     }
     default:
