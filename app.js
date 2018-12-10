@@ -231,25 +231,23 @@ function getCardElements(sender) {
       }
       toppings = toppings.substring(0, toppings.length - 2);
     }
-    for (let i = 0; i < currentOrder.flavors.length; ++i) {
-      if (i === 0) {
-        elements.push({
-          'title': currentOrder.flavors[i],
-          'image_url': flavorImage[currentOrder.flavors[i]],
-          'subtitle' : currentOrder.size + " " + currentOrder.container + syrups + toppings + '\nTotal price: $' + currentOrder.price,
-          'buttons' : [{
-            'type': 'postback',
-            'title': 'Confirm Order',
-            'payload': 'order_confirm'
-          }]
-        });
-      } else {
-        elements.push({
-          'title': currentOrder.flavors[i],
-          'image_url': flavorImage[currentOrder.flavors[i]]
-        });
-      }
-    }
+    let image_url = '';
+    if (currentOrder.flavors.indexOf('vanilla') !== -1)
+      image_url += 'vanilla';
+    if (currentOrder.flavors.indexOf('chocolate') !== -1)
+      image_url += 'chocolate';
+    if (currentOrder.flavors.indexOf('matcha') !== -1)
+      image_url += 'matcha';
+    elements.push({
+      'title': currentOrder.flavors[i],
+      'image_url': image_url,
+      'subtitle' : currentOrder.size + " " + currentOrder.container + syrups + toppings + '\nTotal price: $' + currentOrder.price,
+      'buttons' : [{
+        'type': 'postback',
+        'title': 'Confirm Order',
+        'payload': 'order_confirm'
+      }]
+    });
     return elements;
   } else {
     return [{'title': 'something went wrong'}];

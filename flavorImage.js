@@ -1,4 +1,7 @@
 const flavorImage = {
+  'vanillachocolate' : 'https://previews.123rf.com/images/yatomo/yatomo1105/yatomo110500383/9641627-chocolate-and-vanilla-ice-cream.jpg',
+  'vanillamatcha' : 'http://nomadicteaparty.apps-1and1.com/wp-content/uploads/2016/06/IMG_7630.jpg',
+  'chocolatematcha' : 'https://i.ytimg.com/vi/xB3_K_AmY8U/hqdefault.jpg',
   'vanilla' : 'https://us.123rf.com/450wm/foodandmore/foodandmore1703/foodandmore170300194/74249716-high-angle-still-life-of-single-scoop-of-vanilla-ice-cream-served-on-white-background-with-vanilla-b.jpg?ver=6',
   'chocolate': 'https://us.123rf.com/450wm/tobi/tobi1304/tobi130400058/18880607-scoop-of-chocolate-ice-cream.jpg?ver=6',
   'matcha': 'https://cdn.shopify.com/s/files/1/2177/0197/products/greenteayogurt_300x300.jpg?v=1507341388',
