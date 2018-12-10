@@ -232,14 +232,22 @@ function getCardElements(sender) {
       toppings = toppings.substring(0, toppings.length - 2);
     }
     let image_url = '';
-    if (currentOrder.flavors.indexOf('vanilla') !== -1)
+    let title = '';
+    if (currentOrder.flavors.indexOf('vanilla') !== -1) {
       image_url += 'vanilla';
-    if (currentOrder.flavors.indexOf('chocolate') !== -1)
+      title += ' Vanilla ';
+    }
+    if (currentOrder.flavors.indexOf('chocolate') !== -1) {
       image_url += 'chocolate';
-    if (currentOrder.flavors.indexOf('matcha') !== -1)
+      title += ' Chocolate ';
+
+    }
+    if (currentOrder.flavors.indexOf('matcha') !== -1) {
       image_url += 'matcha';
+      title += ' Matcha ';
+    }
     elements.push({
-      'title': currentOrder.flavors[i],
+      'title': title,
       'image_url': image_url,
       'subtitle' : currentOrder.size + " " + currentOrder.container + syrups + toppings + '\nTotal price: $' + currentOrder.price,
       'buttons' : [{
