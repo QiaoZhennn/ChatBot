@@ -10,19 +10,24 @@ function formatPhoneNumber(phoneNumberString) {
 }
 
 function getName(userInput) {
-  var name = userInput.split(/[ ,]+/)
-  var firstNameIndex = name.indexOf('first')
-  var lastNameIndex = name.indexOf('last')
-  if(name.length <= 2) {
+  let name = userInput.split(/[ ,]+/);
+  let firstNameIndex = name.indexOf('first');
+  let lastNameIndex = name.indexOf('last');
+  if(name.length <= 1) {
+    return name[0];
+  }else if(name.length <= 2) {
     return name[0] + ' ' + name[1];
-  }else if(firstNameIndex != -1) {
-    if(lastNameIndex != -1) {
+  }else if(firstNameIndex !== -1) {
+    if(lastNameIndex !== -1) {
       return name[firstNameIndex + 3] + ' ' + name[lastNameIndex + 3]
     }else{
       return name[firstNameIndex + 3]
     }
   }
-  if(name.length > 2 && name.length <= 5){
+  if(name.length > 2 && name.length <= 4) {
+    return name[name.length - 1];
+  }
+  else if(name.length > 2 && name.length <= 5){
     return name[name.length - 2] + ' ' + name[name.length - 1]
   }
 }
@@ -43,8 +48,4 @@ const Parameters:  { 'fields':
 
  */
 
-const User = require('./user');
-const user = new User("123");
-console.log(user.flavors);
-// change(user);
-console.log(user.flavors.indexOf("vanilla"));
+console.log(getName('zhen'));

@@ -208,11 +208,42 @@ function handleEcho(messageId, appId, metadata) {
   console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
 }
 
-function getCardElements(sender) {
+function getCardElementsOfAllOrderHistory(sender) {
   const user = users[sender];
-  const currentOrder = user.orderHistory[user.orderHistory.length - 1];
-  if (currentOrder) {
-    let elements = [];
+  let elements = [];
+  for (let i = user.orderHistory.length - 1; i >= 0; --i) {
+    elements.push(getCardElement(sender, i, false));
+  }
+  return elements;
+}
+
+function getCardElement(sender, orderHistoryIdx, showButton) {
+  const user = users[sender];
+  const currentOrder = user.orderHistory[orderHistoryIdx];
+  if (showButton) {
+    user.orderHistory.pop();
+    user.price = 0;
+  }
+  if (currentOrder.special && currentOrder.special.length !== 0) {
+    return {
+      'title': currentOrder.special + (', Price: $' +currentOrder.price),
+      'image_url': flavorImage[currentOrder.special],
+      'subtitle' : currentOrder.size + " " + currentOrder.container + (showButton ? '' : ('\nCustomer: ' + currentOrder.customerName)),
+      'buttons' : showButton?[{
+        'type': 'postback',
+        'title': 'Cancel Order',
+        'payload': 'order_cancel'
+      },{
+        'type': 'postback',
+        'title': 'Order One More',
+        'payload': 'order_one_more'
+      },{
+        'type': 'postback',
+        'title': 'Confirm Order',
+        'payload': 'order_confirm'
+      }] : null
+    };
+  } else if (currentOrder.special.length === 0) {
     let syrups = '';
     let toppings = '';
     if (currentOrder.syrups.length !== 0) {
@@ -246,56 +277,57 @@ function getCardElements(sender) {
       image_url += 'matcha';
       title += ' Matcha ';
     }
-    elements.push({
+    title += (', Price: $' +currentOrder.price);
+    return {
       'title': title,
-      'image_url': image_url,
-      'subtitle' : currentOrder.size + " " + currentOrder.container + syrups + toppings + '\nTotal price: $' + currentOrder.price,
-      'buttons' : [{
+      'image_url': flavorImage[image_url],
+      'subtitle' : currentOrder.size + " " + currentOrder.container + syrups + toppings + (showButton ? '' : ('\nCustomer: ' + currentOrder.customerName)),
+      'buttons' : showButton?[{
+        'type': 'postback',
+        'title': 'Cancel Order',
+        'payload': 'order_cancel'
+      },{
+        'type': 'postback',
+        'title': 'Order One More',
+        'payload': 'order_one_more'
+      },{
         'type': 'postback',
         'title': 'Confirm Order',
         'payload': 'order_confirm'
-      }]
-    });
-    return elements;
+      }]:null
+    };
   } else {
-    return [{'title': 'something went wrong'}];
+    return {'title': 'something went wrong'};
   }
-}
-
-function getSpecialCardElements(sender) {
-  const user = users[sender];
-  const currentOrder = user.orderHistory[user.orderHistory.length - 1];
-  const elements = [{
-    'title': currentOrder.special,
-    'image_url': flavorImage[currentOrder.special],
-    'subtitle' : currentOrder.size + " " + currentOrder.container + '\nTotal price: $' + currentOrder.price,
-    'buttons' : [{
-      'type': 'postback',
-      'title': 'Confirm Order',
-      'payload': 'order_confirm'
-    }]
-  }];
-  return elements;
 }
 
 function handleDialogFlowAction(sender, action, messages, contexts, parameters) {
   switch (action) {
-    case "Choose-Special-Confirm": {
-      handleMessages(messages, sender);
-      sendTypingOn(sender);
-      setTimeout(function () {
-        const elements = getSpecialCardElements(sender);
-        sendGenericMessage(sender, elements);
-      }, 300);
-      break;
-    }
+    case "Choose-Special-Confirm":
     case "Choose-Build.Choose-Build-yes.Choose-Build-yes-no": {
       handleMessages(messages, sender);
       sendTypingOn(sender);
+      const user = users[sender];
       setTimeout(function () {
-        const elements = getCardElements(sender);
+        const elements = [getCardElement(sender, user.orderHistory.length - 1, true)];
         sendGenericMessage(sender, elements);
-      }, 300);
+      }, 500);
+      break;
+    }
+    case "print_order_history": {
+      handleMessages(messages, sender);
+      sendTypingOn(sender);
+      setTimeout(function () {
+        const elements = getCardElementsOfAllOrderHistory(sender);
+        if (elements.length !== 0)
+          sendGenericMessage(sender, elements);
+        else
+          sendTextMessage(sender, "Don't have history order info yet");
+      }, 500);
+      break;
+    }
+    case "Personal-info": {
+      console.log(messages);
       break;
     }
     case "customer_info_detail":
@@ -437,16 +469,41 @@ function countPrice(action, parameters, user) {
   console.log('----------v--------v----------v----');
   console.log('Action: ', action);
   console.log('Parameters: ', parameters);
+  if (action === 'order_one_more') {
+    user.summarize();
+    // user.addCustomerName(user.orderHistory.length - 1, "placeholder");
+    user.resetOrder();
+    console.log("Order One More");
+  }
+  if (action === 'order_cancel') {
+    user.resetOrder();
+    console.log("Cancel Order");
+  }
   if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no' || action === 'Choose-Special-Confirm') {
+    user.summarize();
+  }
+  if (action === 'order_confirm') {
     user.summarize();
     console.log(user);
   }
-  else if (action === 'input.welcome' || action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
+  if (action === 'input.welcome' || action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
     console.log('Reset price!');
     user.resetOrder();
   }
-  else if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
+  if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
     user.collectOrderInfo(action, parameters);
+  }
+  if (action === 'customer_name') {
+    user.collectOrderInfo(action, parameters);
+    for (let i = user.orderHistory.length - 1; i >= 0; --i) {
+      console.log('order history name: ', user.orderHistory[i].customerName);
+      if (user.orderHistory[i].customerName.length === 0) {
+        user.orderHistory[i].customerName = user.customerName;
+      } else {
+        break;
+      }
+    }
+    console.log(user);
   }
   console.log('----------A--------A-----------A---');
 }
@@ -888,7 +945,15 @@ function receivedPostback(event) {
 
   switch (payload) {
     case 'order_confirm': {
-      sendTextMessage(senderID, "Can I get a name for your order?");
+      sendToDialogFlow(senderID, "order confirmed");
+      break;
+    }
+    case 'order_cancel': {
+      sendToDialogFlow(senderID, "order canceled");
+      break;
+    }
+    case 'order_one_more': {
+      sendToDialogFlow(senderID, "order one more");
       break;
     }
     case 'Tutti Frutti': {

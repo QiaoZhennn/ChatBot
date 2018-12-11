@@ -11,6 +11,7 @@ class User {
     this.syrups = [];
     this.special = '';
     this.orderHistory = [];
+    this.customerName = '';
   }
 
   resetOrder() {
@@ -20,6 +21,8 @@ class User {
     this.size = '';
     this.toppings = [];
     this.syrups = [];
+    this.special = '';
+    this.customerName = '';
   };
 
 
@@ -64,7 +67,36 @@ class User {
         }
       }
     }
+    if (parameters['fields']['username'] && parameters['fields']['username']['stringValue'].length !== 0) {
+      const inputName = parameters['fields']['username']['stringValue'];
+      console.log('Input Name: ', inputName);
+      console.log('Get Customer Name: ', this.getName(inputName));
+      this.customerName = this.getName(inputName);
+    }
   };
+
+  getName(userInput) {
+    let name = userInput.split(/[ ,]+/);
+    let firstNameIndex = name.indexOf('first');
+    let lastNameIndex = name.indexOf('last');
+    if(name.length <= 1) {
+      return name[0];
+    }else if(name.length <= 2) {
+      return name[0] + ' ' + name[1];
+    }else if(firstNameIndex !== -1) {
+      if(lastNameIndex !== -1) {
+        return name[firstNameIndex + 3] + ' ' + name[lastNameIndex + 3]
+      }else{
+        return name[firstNameIndex + 3]
+      }
+    }
+    if(name.length > 2 && name.length <= 4) {
+      return name[name.length - 1];
+    }
+    else if(name.length > 2 && name.length <= 5){
+      return name[name.length - 2] + ' ' + name[name.length - 1]
+    }
+  }
 
   summarize() {
     if (this.size) {
@@ -93,9 +125,15 @@ class User {
       'size': this.size,
       'toppings': this.toppings,
       'syrups': this.syrups,
-      'price': this.price
+      'price': this.price,
+      'customerName': ''
     })
   };
+
+  addCustomerName(orderHistoryIdx, customerName) {
+    let currentOrder = this.orderHistory[orderHistoryIdx];
+    currentOrder['customerName'] = customerName;
+  }
 }
 
 module.exports = User;
