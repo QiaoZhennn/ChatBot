@@ -391,6 +391,25 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
       sendTextMessage(sender, "All order history on server is cleared");
       break;
     }
+    case "Cancel-Order.Cancel-Order-no": {
+      const user = users[sender];
+      let priceForThisCustomer = 0;
+      let i = user.orderHistory.length - 1;
+      for (; i >= 0; --i) {
+        if (user.orderHistory[i].customerName.length === 0) {
+          priceForThisCustomer += parseFloat(user.orderHistory[i].price);
+        } else {
+          break;
+        }
+      }
+      const count = user.orderHistory.length - 1 - i;
+      console.log("Total price: ", priceForThisCustomer.toFixed(2));
+      if (count >= 1)
+        sendTextMessage(sender, "You have " + count + " orders, total price is $" + priceForThisCustomer.toFixed(2) + " . Can I get your name, please?");
+      else
+        sendTextMessage(sender, "Thanks for your time. Bye~");
+      break;
+    }
     case "order_confirm": {
       const user = users[sender];
       user.summarize();
