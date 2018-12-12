@@ -147,6 +147,7 @@ app.post('/webhook/', function (req, res) {
 });
 
 
+let messageText = '';
 function receivedMessage(event) {
 
   var senderID = event.sender.id;
@@ -169,7 +170,7 @@ function receivedMessage(event) {
   var metadata = message.metadata;
 
   // You may get a text or attachment but not both
-  var messageText = message.text;
+  messageText = message.text;
   console.log('>>>>>>>>>>>>>>>>>>> Message: ', messageText);
   var messageAttachments = message.attachments;
   var quickReply = message.quick_reply;
@@ -361,12 +362,14 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
     case "Choose-Special-Confirm":
     case "Choose-Build.Choose-Build-yes.Choose-Build-yes-no": {
       handleMessages(messages, sender);
-      sendTypingOn(sender);
+      // sendTypingOn(sender);
       const user = users[sender];
-      setTimeout(function () {
-        const elements = [getCardElement(sender, user.orderHistory.length - 1, true)];
-        sendGenericMessage(sender, elements);
-      }, 500);
+      const elements = [getCardElement(sender, user.orderHistory.length - 1, true)];
+      sendGenericMessage(sender, elements);
+      // setTimeout(function () {
+      //   const elements = [getCardElement(sender, user.orderHistory.length - 1, true)];
+      //   sendGenericMessage(sender, elements);
+      // }, 500);
       break;
     }
     case "choose-special": {
@@ -376,14 +379,19 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
     }
     case "print_order_history": {
       handleMessages(messages, sender);
-      sendTypingOn(sender);
-      setTimeout(function () {
-        const elements = getCardElementsOfAllOrderHistory(sender);
-        if (elements.length !== 0)
-          sendGenericMessage(sender, elements);
-        else
-          sendTextMessage(sender, "Don't have history order info yet");
-      }, 500);
+      // sendTypingOn(sender);
+      const elements = getCardElementsOfAllOrderHistory(sender);
+      if (elements.length !== 0)
+        sendGenericMessage(sender, elements);
+      else
+        sendTextMessage(sender, "Don't have history order info yet");
+      // setTimeout(function () {
+      //   const elements = getCardElementsOfAllOrderHistory(sender);
+      //   if (elements.length !== 0)
+      //     sendGenericMessage(sender, elements);
+      //   else
+      //     sendTextMessage(sender, "Don't have history order info yet");
+      // }, 100);
       break;
     }
     case "Clear-Order-History.Clear-Order-History-yes": {
@@ -416,6 +424,7 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
       let priceForThisCustomer = 0;
       let i = user.orderHistory.length - 1;
       for (; i >= 0; --i) {
+        console.log('Order confirm: ', i, user.orderHistory[i]);
         if (user.orderHistory[i].customerName.length === 0) {
           priceForThisCustomer += parseFloat(user.orderHistory[i].price);
         } else {
@@ -432,9 +441,9 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
     }
     case "customer_name": {
       const user = users[sender];
-      user.collectOrderInfo(action, parameters);
+      if (user.customerName.length === 0)
+        user.customerName = getName(messageText);
       for (let i = user.orderHistory.length - 1; i >= 0; --i) {
-        console.log('order history name: ', user.orderHistory[i].customerName);
         if (user.orderHistory[i].customerName.length === 0) {
           user.orderHistory[i].customerName = user.customerName;
         } else {
@@ -465,6 +474,29 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
     default:
       //unhandled action, just send back the text
       handleMessages(messages, sender);
+  }
+}
+
+function getName(userInput) {
+  let name = userInput.split(/[ ,]+/);
+  let firstNameIndex = name.indexOf('first');
+  let lastNameIndex = name.indexOf('last');
+  if(name.length <= 1) {
+    return name[0];
+  }else if(name.length <= 2) {
+    return name[0] + ' ' + name[1];
+  }else if(firstNameIndex !== -1) {
+    if(lastNameIndex !== -1) {
+      return name[firstNameIndex + 3] + ' ' + name[lastNameIndex + 3]
+    }else{
+      return name[firstNameIndex + 3]
+    }
+  }
+  if(name.length > 2 && name.length <= 4) {
+    return name[name.length - 1];
+  }
+  else if(name.length > 2 && name.length <= 5){
+    return name[name.length - 2] + ' ' + name[name.length - 1]
   }
 }
 
@@ -653,7 +685,7 @@ function handleDialogFlowResponse(sender, response) {
 
 async function sendToDialogFlow(sender, textString, params) {
 
-  sendTypingOn(sender);
+  // sendTypingOn(sender);
 
   // console.log('Send To DialogFlow');
   try {
