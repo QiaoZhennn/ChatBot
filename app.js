@@ -326,6 +326,28 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
       }, 500);
       break;
     }
+    case "Clear-Order-History.Clear-Order-History-yes": {
+      users = {};
+      sendTextMessage(sender, "All order history on server is cleared");
+      break;
+    }
+    case "order_confirm": {
+      const user = users[sender];
+      user.summarize();
+      let priceForThisCustomer = 0;
+      let i = user.orderHistory.length - 1;
+      for (; i >= 0; --i) {
+        if (user.orderHistory[i].customerName.length === 0) {
+          priceForThisCustomer += parseFloat(user.orderHistory[i].price);
+        } else {
+          break;
+        }
+      }
+      const count = user.orderHistory.length - 1 - i;
+      console.log("Total price: ", priceForThisCustomer.toFixed(2));
+      sendTextMessage("You have " + count + " orders, total price is $" + priceForThisCustomer.toFixed(2));
+      break;
+    }
     case "Personal-info": {
       console.log(messages);
       break;
@@ -384,7 +406,7 @@ function handleMessage(message, sender) {
             "content_type": "text",
             "title": text,
             "payload": text
-          }
+          };
         replies.push(reply);
       });
       sendQuickReply(sender, message.quickReplies.title, replies);
@@ -481,10 +503,6 @@ function countPrice(action, parameters, user) {
   }
   if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no' || action === 'Choose-Special-Confirm') {
     user.summarize();
-  }
-  if (action === 'order_confirm') {
-    user.summarize();
-    console.log(user);
   }
   if (action === 'input.welcome' || action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
     console.log('Reset price!');
