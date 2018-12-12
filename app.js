@@ -105,11 +105,13 @@ app.get('/webhook/', function (req, res) {
  * https://developers.facebook.com/docs/messenger-platform/product-overview/setup#subscribe_app
  *
  */
+let fullUrl = '';
 app.post('/webhook/', function (req, res) {
   var data = req.body;
   console.log(JSON.stringify(data));
 
-
+  fullUrl = req.protocol + '://' + req.get('host');
+  // console.log("full url: ", fullUrl);
   // Make sure this is a page subscription
   if (data.object == 'page') {
     // Iterate over each entry
@@ -226,18 +228,18 @@ function getCardElement(sender, orderHistoryIdx, showButton) {
   }
   if (currentOrder.special && currentOrder.special.length !== 0) {
     return {
-      'title': currentOrder.special + (', Price: $' +currentOrder.price),
-      'image_url': flavorImage[currentOrder.special],
-      'subtitle' : currentOrder.size + " " + currentOrder.container + (showButton ? '' : ('\nCustomer: ' + currentOrder.customerName)),
-      'buttons' : showButton?[{
+      'title': currentOrder.special + (', Price: $' + currentOrder.price),
+      'image_url': fullUrl + '/images/' + currentOrder.special + '.jpg',
+      'subtitle': currentOrder.size + " " + currentOrder.container + (showButton ? '' : ('\nCustomer: ' + currentOrder.customerName)),
+      'buttons': showButton ? [{
         'type': 'postback',
         'title': 'Cancel Order',
         'payload': 'order_cancel'
-      },{
+      }, {
         'type': 'postback',
         'title': 'Order One More',
         'payload': 'order_one_more'
-      },{
+      }, {
         'type': 'postback',
         'title': 'Confirm Order',
         'payload': 'order_confirm'
@@ -277,28 +279,81 @@ function getCardElement(sender, orderHistoryIdx, showButton) {
       image_url += 'matcha';
       title += ' Matcha ';
     }
-    title += (', Price: $' +currentOrder.price);
+    title += (', Price: $' + currentOrder.price);
     return {
       'title': title,
-      'image_url': flavorImage[image_url],
-      'subtitle' : currentOrder.size + " " + currentOrder.container + syrups + toppings + (showButton ? '' : ('\nCustomer: ' + currentOrder.customerName)),
-      'buttons' : showButton?[{
+      'image_url': fullUrl + '/images/' + image_url + '.jpg',
+      'subtitle': currentOrder.size + " " + currentOrder.container + syrups + toppings + (showButton ? '' : ('\nCustomer: ' + currentOrder.customerName)),
+      'buttons': showButton ? [{
         'type': 'postback',
         'title': 'Cancel Order',
         'payload': 'order_cancel'
-      },{
+      }, {
         'type': 'postback',
         'title': 'Order One More',
         'payload': 'order_one_more'
-      },{
+      }, {
         'type': 'postback',
         'title': 'Confirm Order',
         'payload': 'order_confirm'
-      }]:null
+      }] : null
     };
   } else {
     return {'title': 'something went wrong'};
   }
+}
+
+function getSpeicalElements() {
+  return [{
+    'title': 'American Dream',
+    'image_url': fullUrl + '/images/American_dream.jpg',
+    'buttons': [{
+      'type': 'postback',
+      'title': 'American Dream',
+      'payload': 'American Dream'
+    }]
+  }, {
+      'title': 'Chocolate Therapy',
+      'image_url': fullUrl + '/images/Chocolate_therapy.jpg',
+      'buttons': [{
+        'type': 'postback',
+        'title': 'Chocolate Therapy',
+        'payload': 'Chocolate Therapy'
+      }]
+    }, {
+    'title': 'Chunky Monkey',
+    'image_url': fullUrl + '/images/Chunky_monkey.jpg',
+    'buttons': [{
+      'type': 'postback',
+      'title': 'Chunky Monkey',
+      'payload': 'Chunky Monkey'
+    }]
+  }, {
+    'title': 'Peanut World',
+    'image_url': fullUrl + '/images/Peanut_world.jpg',
+    'buttons': [{
+      'type': 'postback',
+      'title': 'Peanut World',
+      'payload': 'Peanut World'
+    }]
+  }, {
+    'title': 'Strawberry Cheesecake',
+    'image_url': fullUrl + '/images/Strawberry_Cheesecake.jpg',
+    'buttons': [{
+      'type': 'postback',
+      'title': 'Strawberry Cheesecake',
+      'payload': 'Strawberry Cheesecake'
+    }]
+  }, {
+    'title': 'Tutti Frutti',
+    'image_url': fullUrl + '/images/Tutti_Frutti.jpg',
+    'buttons': [{
+      'type': 'postback',
+      'title': 'Tutti Frutti',
+      'payload': 'Tutti Frutti'
+    }]
+  }
+  ]
 }
 
 function handleDialogFlowAction(sender, action, messages, contexts, parameters) {
@@ -312,6 +367,11 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
         const elements = [getCardElement(sender, user.orderHistory.length - 1, true)];
         sendGenericMessage(sender, elements);
       }, 500);
+      break;
+    }
+    case "choose-special": {
+      sendTextMessage(sender, 'Nice! We have a variety of signature ice cream, which one would you like?');
+      sendGenericMessage(sender, getSpeicalElements());
       break;
     }
     case "print_order_history": {
@@ -345,11 +405,18 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
       }
       const count = user.orderHistory.length - 1 - i;
       console.log("Total price: ", priceForThisCustomer.toFixed(2));
-      sendTextMessage(sender, "You have " + count + " orders, total price is $" + priceForThisCustomer.toFixed(2));
+      if (count > 1)
+        sendTextMessage(sender, "You have " + count + " orders, total price is $" + priceForThisCustomer.toFixed(2) + " . Can I get your name, please?");
+      else
+        sendTextMessage(sender, "Can I get your name, please?");
       break;
     }
-    case "Personal-info": {
-      console.log(messages);
+    case "special_info": {
+      const elements = [{
+        'title': 'test',
+        'image_url': fullUrl + '/images/Tutti_Frutti.jpg'
+      }];
+      sendGenericMessage(sender, elements);
       break;
     }
     case "customer_info_detail":
