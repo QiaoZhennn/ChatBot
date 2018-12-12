@@ -48,4 +48,4 @@ const Parameters:  { 'fields':
 
  */
 
-console.log(getName('zhen'));
+console.log(getName('my first name if Alex, my last name is Amy'));

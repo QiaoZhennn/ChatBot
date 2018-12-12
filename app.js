@@ -430,6 +430,21 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
         sendTextMessage(sender, "Can I get your name, please?");
       break;
     }
+    case "customer_name": {
+      const user = users[sender];
+      user.collectOrderInfo(action, parameters);
+      for (let i = user.orderHistory.length - 1; i >= 0; --i) {
+        console.log('order history name: ', user.orderHistory[i].customerName);
+        if (user.orderHistory[i].customerName.length === 0) {
+          user.orderHistory[i].customerName = user.customerName;
+        } else {
+          break;
+        }
+      }
+      sendTextMessage(sender, "OK. "+user.customerName+", we will call you when your order is ready. Thank you!");
+      console.log(user);
+      break;
+    }
     case "special_info": {
       const elements = [{
         'title': 'test',
