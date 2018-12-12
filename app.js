@@ -345,7 +345,7 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
       }
       const count = user.orderHistory.length - 1 - i;
       console.log("Total price: ", priceForThisCustomer.toFixed(2));
-      sendTextMessage("You have " + count + " orders, total price is $" + priceForThisCustomer.toFixed(2));
+      sendTextMessage(sender, "You have " + count + " orders, total price is $" + priceForThisCustomer.toFixed(2));
       break;
     }
     case "Personal-info": {
