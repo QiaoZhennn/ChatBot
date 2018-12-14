@@ -290,6 +290,10 @@ function getCardElement(sender, orderHistoryIdx, showButton) {
       image_url += 'matcha';
       title += ' Matcha ';
     }
+    if (currentOrder.flavors.indexOf('mango') !== -1) {
+      image_url += 'mango';
+      title += ' Mango ';
+    }
     title += (', Price: $' + currentOrder.price);
     return {
       'title': title,
