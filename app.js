@@ -465,7 +465,10 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
           break;
         }
       }
-      sendTextMessage(sender, "OK. "+user.customerName+", we will call you when your order is ready. Thank you!");
+      if (user.customerName.length !== 0)
+        sendTextMessage(sender, "OK. "+user.customerName+", we will call you when your order is ready. Thank you!");
+      else
+        sendTextMessage(sender, "Thank you!");
       console.log(user);
       break;
     }
