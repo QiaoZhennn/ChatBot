@@ -358,12 +358,27 @@ function getSpeicalElements() {
 }
 
 function handleDialogFlowAction(sender, action, messages, contexts, parameters) {
+  console.log("----v--------v----------v-----");
+  console.log(contexts);
+  console.log("----A--------A----------A-----");
   switch (action) {
-    case "Choose-Special-Confirm":
+    case "choose_special_custom_info": {
+      const user = users[sender];
+      handleMessages(messages, sender);
+      if (user.special.length !== 0 && user.container.length !== 0 && user.size.length !== 0) {
+        // sendTypingOn(sender);
+        const user = users[sender];
+        user.summarize();
+        const elements = [getCardElement(sender, user.orderHistory.length - 1, true)];
+        sendGenericMessage(sender, elements);
+      }
+      break;
+    }
     case "Choose-Build.Choose-Build-yes.Choose-Build-yes-no": {
       handleMessages(messages, sender);
       // sendTypingOn(sender);
       const user = users[sender];
+      user.summarize();
       const elements = [getCardElement(sender, user.orderHistory.length - 1, true)];
       sendGenericMessage(sender, elements);
       // setTimeout(function () {
@@ -372,7 +387,7 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
       // }, 500);
       break;
     }
-    case "choose-special": {
+    case "user_choose_special": {
       sendTextMessage(sender, 'Nice! We have a variety of signature ice cream, which one would you like?');
       sendGenericMessage(sender, getSpeicalElements());
       break;
@@ -634,14 +649,11 @@ function countPrice(action, parameters, user) {
     user.resetOrder();
     console.log("Cancel Order");
   }
-  if (action === 'Choose-Build.Choose-Build-yes.Choose-Build-yes-no' || action === 'Choose-Special-Confirm') {
-    user.summarize();
-  }
-  if (action === 'input.welcome' || action === 'DefaultWelcomeIntent.DefaultWelcomeIntent-yes' || action === 'Choose-Special.Choose-Special-custom.Choose-Special-custom-no') {
-    console.log('Reset price!');
+  if (action === 'input.welcome') {
+    console.log('Reset Order!');
     user.resetOrder();
   }
-  if (action === 'Build' || action === 'Add-Extra' || 'Choose-Special.Choose-Special-custom') {
+  if (action === 'Build' || action === 'Add-Extra' || action === 'choose_special_custom_info') {
     user.collectOrderInfo(action, parameters);
   }
   if (action === 'customer_name') {
