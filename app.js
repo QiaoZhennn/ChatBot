@@ -475,7 +475,11 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
           break;
         }
       }
-      sendTextMessage(sender, "Gotcha! we will call you when your order is ready. Thank you!");
+      if (user.customerName.length !== 0)
+        sendTextMessage(sender, "Gotcha! we will call you when your order is ready. Thank you!");
+      else
+        sendTextMessage(sender, "Thank you!");
+      console.log(user);
       break;
     }
     case "special_info": {
