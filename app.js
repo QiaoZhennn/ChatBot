@@ -466,6 +466,8 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
     }
     case "customer_name": {
       const user = users[sender];
+      if (messageText.toLowerCase() === 'hi' || messageText.toLowerCase() === 'hello' || messageText.toLowerCase() === 'how are you' || messageText.toLowerCase() === 'hola')
+        break;
       if (user.customerName.length === 0)
         user.customerName = getName(messageText);
       for (let i = user.orderHistory.length - 1; i >= 0; --i) {
@@ -476,7 +478,7 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
         }
       }
       if (user.customerName.length !== 0)
-        sendTextMessage(sender, "Gotcha! we will call you when your order is ready. Thank you!");
+        sendTextMessage(sender, "Gotcha! Thank you "+user.customerName+", we will call you when your order is ready!");
       else
         sendTextMessage(sender, "Thank you!");
       console.log(user);
