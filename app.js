@@ -220,6 +220,15 @@ function getCardElementsOfAllOrderHistory(sender) {
   return elements;
 }
 
+const specialMap = {
+  'American Dream' : 'American_dream'  ,
+  'Chocolate Therapy' : 'Chocolate_therapy',
+  'Chunky Monkey' : 'Chunky_monkey',
+  'Peanut World' : 'Peanut_world',
+  'Strawberry Cheesecake' : 'Strawberry_Cheesecake',
+  'Tutti Frutti' : 'Tutti_Frutti'
+};
+
 function getCardElement(sender, orderHistoryIdx, showButton) {
   const user = users[sender];
   const currentOrder = user.orderHistory[orderHistoryIdx];
@@ -230,7 +239,7 @@ function getCardElement(sender, orderHistoryIdx, showButton) {
   if (currentOrder.special && currentOrder.special.length !== 0) {
     return {
       'title': currentOrder.special + (', Price: $' + currentOrder.price),
-      'image_url': fullUrl + '/images/' + currentOrder.special + '.jpg',
+      'image_url': fullUrl + '/images/' + specialMap[currentOrder.special] + '.jpg',
       'subtitle': currentOrder.size + " " + currentOrder.container + (showButton ? '' : ('\nCustomer: ' + currentOrder.customerName)),
       'buttons': showButton ? [{
         'type': 'postback',
