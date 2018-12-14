@@ -237,6 +237,7 @@ function getCardElement(sender, orderHistoryIdx, showButton) {
     user.price = 0;
   }
   if (currentOrder.special && currentOrder.special.length !== 0) {
+    console.log('Special image url:', fullUrl + '/images/' + specialMap[currentOrder.special] + '.jpg');
     return {
       'title': currentOrder.special + (', Price: $' + currentOrder.price),
       'image_url': fullUrl + '/images/' + specialMap[currentOrder.special] + '.jpg',
@@ -484,7 +485,7 @@ function handleDialogFlowAction(sender, action, messages, contexts, parameters) 
     case "special_info": {
       const elements = [{
         'title': 'test',
-        'image_url': fullUrl + '/images/Tutti_Frutti.jpg'
+        'image_url': fullUrl + '/images/'+specialMap['Tutti Frutti']+'.jpg'
       }];
       sendGenericMessage(sender, elements);
       break;
